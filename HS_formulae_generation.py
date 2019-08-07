@@ -24,10 +24,6 @@ def tolist(row):
 def vankrev_vis(df, flag=None):
     if(flag=='H/C, O/C' or flag==None):
         sns.mpl.rc("figure", figsize=(9,4))
-        #plt.figure(figsize=(18, 16))
-    #ax.plot(x, y, marker='s', linestyle='none', label='big')
-        #fig, ax = plt.subplots()
-        #fig.set_size_inches(18.5, 10.5)
         df=df[['H/C', 'O/C', 'Label']]
         ax=sns.lmplot(x="H/C", y="O/C", fit_reg=False, hue="Label", data=df)
 
@@ -36,30 +32,27 @@ def formdict(formlist):
     for i in range(len(formlist)):
         formulas_dict[i] = formlist[i]
     return formulas_dict
+
 def eucl_sim(heatmap):
     heatmap = heatmap[heatmap.columns].astype(float)
-    #print heatmap
     heatmap=heatmap.div(heatmap.values.max())
-   # print heatmap
     heatmap=1-heatmap
     return heatmap
+
 def count_elrel(df):
        df['H/C']=df['H'].map(float)/df['C'].map(float)
        df['O/C']=df['O'].map(float)/df['C'].map(float)
        df['DBE']=(df['C'].map(float)+1)-(df['H'].map(float)/2)
        return df
+
 def heatmap_vis(heatmap):
     fig, ax = plt.subplots()
-    #ax.plot(x, y, marker='s', linestyle='none', label='big')
-    fig.set_size_inches(18.5, 10.5)
-    #sns.set(font_scale=1.4)        
+    fig.set_size_inches(18.5, 10.5)        
     ax=sns.heatmap(heatmap, linewidth=.5,cmap='YlOrBr',square=True, vmin=heatmap.values.min(), vmax=1, annot=True)        
     ax.xaxis.tick_top()
     ax.set_xticklabels(ax.xaxis.get_majorticklabels(), rotation=90)
-
     ax.set_yticklabels(ax.yaxis.get_majorticklabels(), rotation=0)
-    plt.savefig("/home/alex/gum_heatmap.svg")
-
+    plt.savefig("~/heatmap.svg")
     
 def atom_count(df, elements=None):
     if (elements=='CHO' or elements==None):
@@ -67,6 +60,7 @@ def atom_count(df, elements=None):
     elif (elements=='CHONS'):
         df['AtomCount']=df['C'].map(int)+df['H'].map(int)+df['N'].map(int)+df['O'].map(int)+df['S'].map(int)
     return df
+
 def formula(df, elements=None, flag=None):
     if (flag==None):
         if (elements=='CHO' or elements==None):
@@ -101,19 +95,14 @@ def heatmap(fp, source_list, fp_type=None, dist_metric=None):
     elif(fp_type=='relative'):
         for i in source_list:
             vec=fp.loc[i]['Fingerprint']
-            #print vec
             if(dist_metric=='Euclidean'):            
                 for item, row in fp.iterrows():
-                    #print np.linalg.norm((vec-row['Fingerprint']))
-    
                     heatmap.loc[i][item]=np.linalg.norm((vec-row['Fingerprint']))
-                    #print np.linalg.norm((vec-row['Fingerprint']))
-               
-                #print heatmap
             elif(dist_metric==None or dist_metric=='Tanimoto'):
                 print('Please, choose the metric for the distance measure. You can\'t choose \'Tanimoto\' for the fp_type=relative')
         heatmap=eucl_sim(heatmap)
-        return heatmap    
+        return heatmap
+    
 def fingerprint(df, source_list, formulas_list, flag=None, space=None):   
     formulas_dict=formdict(formulas_list)    
     if (flag=='bool' or flag==None or flag=='form'):
@@ -122,18 +111,12 @@ def fingerprint(df, source_list, formulas_list, flag=None, space=None):
             fp_bool.loc[str(item),list(df['Formula'][df['Source']==str(item)])]=1
         fp_bool=fp_bool.fillna(0)
         size=len(formulas_list)
-        nums = np.ones(size)
-        nums[:2353] = 0
-        print nums
-        print len(nums)
+        nums = np.zeros(size)
+        nums[:2353] = 1
         np.random.shuffle(nums)
         nums=nums.astype(int)
-        print nums
-        print type(nums)
-        #np.copyto(fp_bool.loc['Random'].T.values,np.random.randint(2, size=(len(formulas_list))))
         np.copyto(fp_bool.loc['Random'].T.values,nums)
         fp_bool['Fingerprint']=fp_bool[fp_bool.columns].values.tolist()###adding all values to one column
-        #fp_bool=fp_bool.append(np.random.randint(2, size=(1,10183)), columns='Fingerprint', )
         fp_bool['Fingerprint']=fp_bool['Fingerprint'].map(lambda x: np.asarray(x))
         if (flag=='bool' or flag==None):
             return fp_bool
@@ -176,15 +159,8 @@ def fingerprint(df, source_list, formulas_list, flag=None, space=None):
         fp_rel['Fingerprint']=fp_rel[fp_rel.columns].values.tolist()###adding all values to one column
         fp_rel['Fingerprint']=fp_rel['Fingerprint'].map(lambda x: np.asarray(x))
         fp_rel['Fingerprint']=fp_rel['Fingerprint'].apply(lambda x: x/x.max())
-#        for i, row in fp_rel.iterrows():
-#            #print row['Fingerprint']
-#            #print type(row['Fingerprint'])
-#            row['Fingerprint']=row['Fingerprint']/row['Fingerprint'].max()
-#            fp_rel.loc[i, 'Fingerprint']=row['Fingerprint']
-            # fp_rel_ls.append(row.T)
-           
-        #fp_rel=pd.concat(fp_rel_ls, axis=0)
         return fp_rel
+    
 def IAC(df, collist):
     shlist=[]    
     for item in collist:
@@ -221,12 +197,10 @@ def count_combs(df, flag, left, i, comb, add):
         while i < len(aw):
             comb.append( (0, aw[i]) )
             i += 1
-        #print "".join("%s%d" % (names[c],n) for (n,c) in comb)
         df.append(str("".join("%s%d" % (names[c],n) for (n,c) in comb)))
         return 1
     cur = aw[i]
     return sum(count_combs(df, flag, left-x*cur, i+1, comb[:], (x,cur)) for x in range(0, int(left/cur)+1))
-
 
 def space(mw, flag):
     df=[]
@@ -241,6 +215,7 @@ def space(mw, flag):
         df=[]
     flat_list=[item for sublist in full_list for item in sublist]
     return flat_list
+
 def restrict(flat_list):
     rational_formulas_list=[x for x in flat_list if ((int(re.search(('C(\d*)'),x).group(1))>0) & (int(re.search(('H(\d*)'),x).group(1))>0) & (int(re.search(('O(\d*)'),x).group(1))>0))]
     gumate_formulas_list=[x for x in rational_formulas_list if ((float((float(re.search(('H(\d*)'),x).group(1)))/(float(re.search(('C(\d*)'),x).group(1))))>=0.27) & (float((float(re.search(('H(\d*)'),x).group(1)))/(float(re.search(('C(\d*)'),x).group(1))))<=2.2)&(float((float(re.search(('O(\d*)'),x).group(1)))/(float(re.search(('C(\d*)'),x).group(1))))>0)&(float((float(re.search(('O(\d*)'),x).group(1)))/(float(re.search(('C(\d*)'),x).group(1))))<=1))]
