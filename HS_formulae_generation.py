@@ -140,7 +140,7 @@ def fingerprint(df, source_list, formulas_list, flag=None, space=None):
                  if row[source_list].sum()==0:
                      fp_form.loc[i, 'Source']='Unpresented'
                  elif row[source_list].sum()==1:
-                     fp_form.loc[i, 'Source']=str(row[source_list].idxmax())
+                     fp_form.loc[i, 'Source']=str(row[row==1].index[0])
                  else:
                      #row=row[source_list]
                      #source_set=set(list(row[row.isin([1])].index))
@@ -160,6 +160,18 @@ def fingerprint(df, source_list, formulas_list, flag=None, space=None):
         fp_rel['Fingerprint']=fp_rel['Fingerprint'].map(lambda x: np.asarray(x))
         fp_rel['Fingerprint']=fp_rel['Fingerprint'].apply(lambda x: x/x.max())
         return fp_rel
+
+def senior_rules(df):
+   for element in ['C', 'H', 'O']:
+       df[element] = df[element].astype(int)
+   df['sumval'] = 4*df['C']+2*df['O']+1*df['H']
+   df.loc[df['sumval']%2==0, 'rule1'] = 1
+   df.loc[df['sumval']%2>0, 'rule1'] = 0
+   df.loc[df['sumval']>=8, 'rule2'] = 1
+   df.loc[df['sumval']<8, 'rule2'] = 0
+   df.loc[df['sumval']>=2*(df['C']+df['H']+df['O']-1), 'rule3'] = 1
+   df.loc[df['sumval']<2*(df['C']+df['H']+df['O']-1), 'rule3'] = 0
+   return df    
     
 def IAC(df, collist):
     shlist=[]    
