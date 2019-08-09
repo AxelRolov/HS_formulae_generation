@@ -112,7 +112,7 @@ def fingerprint(df, source_list, formulas_list, flag=None, space=None):
         fp_bool=fp_bool.fillna(0)
         size=len(formulas_list)
         nums = np.zeros(size)
-        nums[:2353] = 1
+        nums[:2347] = 1
         np.random.shuffle(nums)
         nums=nums.astype(int)
         np.copyto(fp_bool.loc['Random'].T.values,nums)
